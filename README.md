@@ -42,6 +42,6 @@ Each line of `honeypot.jsonl` is one JSON object:
 During a real DDoS attack, `source_ip` is the **victim's spoofed IP**, not
 the attacker's IP. This is how we track who is being attacked.
 
-## Log format
+## Dataset
 
 The dataset that was collected during the research project is located at ./analysis/honeypot.jsonl
