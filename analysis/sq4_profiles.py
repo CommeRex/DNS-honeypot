@@ -118,7 +118,6 @@ def fig_attacker_scatter(df, sessions):
     ax.set_xscale("log")
     ax.set_xlabel("Packets from source IP (log scale)")
     ax.set_ylabel("Mean amplification factor (BAF)")
-    ax.set_title("Source IP behaviour: volume vs amplification")
     ax.legend()
     plt.tight_layout()
     path = os.path.join(hc.OUTPUT_DIR, "fig6_attacker_scatter.png")
