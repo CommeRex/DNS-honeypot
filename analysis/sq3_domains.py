@@ -35,7 +35,6 @@ def fig_query_types(df):
     ax.bar(counts.index, counts.values, color=hc.BLUE)
     ax.set_xlabel("Query type")
     ax.set_ylabel("Number of packets (incl. rate-limited)")
-    ax.set_title("DNS query type distribution")
     for i, v in enumerate(counts.values):
         ax.text(i, v + max(counts.values) * 0.01, str(int(v)),
                 ha="center", va="bottom", fontsize=9)
