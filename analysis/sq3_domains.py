@@ -1,5 +1,7 @@
 """
-Abused domains and query types.
+sq3_domains.py
+==============
+SQ3 - Abused domains and query types.
 
 Outputs (in ./analysis_output/):
     fig3_query_types.png         - query type distribution (incl. rate-limited)
@@ -11,7 +13,7 @@ Outputs (in ./analysis_output/):
                                    (reflector-validation / pre-attack scanning)
 
 Usage:
-    py sq3_domains.py honeypot.jsonl
+    python3 sq3_domains.py honeypot.jsonl
 """
 
 import sys
@@ -20,7 +22,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import honeypot_common as hc
 
+# Query types that still yield large responses on DNSSEC-signed zones and that an
+# attacker might shift to after RFC 8482 discouraged ANY.
 POST_RFC8482_TYPES = ["ANY", "DNSKEY", "NSEC3", "NSEC", "RRSIG"]
+# Threshold above which a response is a meaningful amplifier worth probing for.
 HIGH_BAF = 10.0
 
 
@@ -155,6 +160,29 @@ def table_high_baf_probing(df, min_baf=HIGH_BAF):
     return out
 
 
+def table_edns(df):
+    """
+    EDNS0 buffer advertised in received queries, with amplification per size.
+    The edns_payload field is taken from each incoming request (the buffer the
+    requester advertised), not set by the honeypot. Amplification is only
+    possible when a large buffer is advertised, so this links request structure
+    to the observed BAF.
+    """
+    n = len(df)
+    g = df.groupby("edns_payload")
+    out = pd.DataFrame({
+        "packets": g.size(),
+        "share_pct": (g.size() / n * 100).round(1),
+        "mean_baf": g["baf"].mean().round(2),
+        "max_baf": g["baf"].max().round(2),
+    }).sort_index()
+    out.index.name = "edns_buffer_bytes"
+    path = os.path.join(hc.OUTPUT_DIR, "table_edns.csv")
+    out.to_csv(path)
+    print(f"  wrote {path}")
+    return out
+
+
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else "honeypot.jsonl"
     hc.ensure_output_dir()
@@ -166,10 +194,13 @@ def main():
     table_query_types(df)
     table_top_domains(df)
     qclass = table_query_class(df)
+    edns = table_edns(df)
     probing = table_high_baf_probing(df)
 
     print("\nQuery class (RFC 8482 angle):")
     print(qclass.to_string(index=False))
+    print("\nEDNS0 buffer vs amplification:")
+    print(edns.to_string())
     if not probing.empty:
         print("\nHigh-BAF multi-source probing:")
         print(probing.to_string())
