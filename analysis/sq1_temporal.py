@@ -25,7 +25,6 @@ def fig_requests_per_day(df):
     ax.bar([str(d) for d in per_day.index], per_day.values, color=hc.BLUE)
     ax.set_xlabel("Date (UTC)")
     ax.set_ylabel("Number of packets (incl. rate-limited)")
-    ax.set_title("DNS requests received per day")
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
     path = os.path.join(hc.OUTPUT_DIR, "fig1_requests_per_day.png")
